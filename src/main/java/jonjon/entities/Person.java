@@ -44,5 +44,8 @@ public class Person {
 		this.following = following;
 	}
 
+	public void addFollowing(Person person) {
+		following.add(person);
+	}
 
 }

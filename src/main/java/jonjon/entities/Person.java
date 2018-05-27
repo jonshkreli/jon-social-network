@@ -48,4 +48,9 @@ public class Person {
 		following.add(person);
 	}
 
+	public boolean isFollowing(Person person) {
+		if(following.contains(person)) return true;
+		else return false;
+	}
+
 }

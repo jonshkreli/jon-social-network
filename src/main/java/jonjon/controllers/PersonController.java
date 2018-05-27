@@ -1,24 +1,17 @@
 package jonjon.controllers;
 
-import jonjon.dao.PersonDao;
 import jonjon.entities.Person;
-import jonjon.repos.PersonRepository;
+import jonjon.logic.PersonServices;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/person/{id}")
 public class PersonController {
 
     @Autowired
-    private PersonRepository personRepository;
-
-    @Autowired
-    private PersonDao personDao;
+    private PersonServices personServices;
 
     @RequestMapping("/index")
     String index(){
@@ -27,25 +20,24 @@ public class PersonController {
     }
 
     @PatchMapping("/addFollowing")
-    List<Person> addFollowing(@PathVariable String id, @RequestBody String FollowPersonId) {
-        Optional<Person> optionalPerson = personRepository.findById(Long.parseLong(id));
-        System.out.println("addFollowing");
-        if (optionalPerson.isPresent()) {
-            Person person = optionalPerson.get();
+    @ResponseBody
+    ResponseEntity addFollowing(@PathVariable String id, @RequestBody String followPersonId) {
+        try {
+            Long personId = Long.parseLong(id);
+            Long followId = Long.parseLong(followPersonId);
+            Person person = personServices.addFollowing(personId, followId);
 
-            Optional<Person> optionalFollowPerson = personRepository.findById(Long.parseLong(FollowPersonId));
-            if (optionalFollowPerson.isPresent()) {
-                Person FollowPerson = optionalFollowPerson.get();
-
-                person.addFollowing(FollowPerson);
-                personRepository.save(person);
-                return person.getFollowing();
-            } else {
-                return null;
-            }
-        } else {
-            return null;
+            if(person != null) return ResponseEntity.ok(person.getFollowing());
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
+        return ResponseEntity.badRequest().build();
+    }
+
+    @DeleteMapping("/deleteAll")
+    void deleteAll() {
+        personServices.deleteAll();
     }
 
 }

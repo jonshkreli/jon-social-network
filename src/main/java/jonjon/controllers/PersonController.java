@@ -76,6 +76,36 @@ public class PersonController {
         }
     }
 
+    @PostMapping(value = "/manageFollowRequest", produces = "text/plain")
+    @ResponseBody
+    ResponseEntity manageFollowRequest(
+            @PathVariable String receiverId,
+            @RequestParam("senderRequestId") String personSenderRequestId,
+            @RequestParam("acceptance") String acceptance
+            ) {
+        try {
+            Long id = Long.parseLong(receiverId);
+            Long senderRequestId = Long.parseLong(personSenderRequestId);
+
+            boolean acceptanceResult = false;
+
+            if(acceptance.equalsIgnoreCase("true") || acceptance.equals("1"))
+                acceptanceResult = true;
+
+            personServices.manageFollowRequest(id, senderRequestId, acceptanceResult);
+
+            String message = "";
+            if(acceptanceResult) message = "follow request accepted";
+            else message = "follow request ignored";
+
+            return new ResponseEntity(message, HttpStatus.CREATED);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ResponseEntity(e.getMessage(),HttpStatus.BAD_REQUEST);
+        }
+    }
+
+
     @DeleteMapping("/deleteAll")
     void deleteAll() {
         personServices.deleteAll();

@@ -1,5 +1,6 @@
 package jonjon.services;
 
+import jonjon.configurations.PersonPrivatesyType;
 import jonjon.entities.Person;
 import jonjon.repos.PersonRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,7 +19,6 @@ public class PersonServices {
     @Autowired
     PersonRepository personRepository;
 
-
     public Person addFollowing(Long personId, Long personFollowingId) throws Exception {
         if(personId.equals(personFollowingId)) throw new Exception("Can not follow itself");
 
@@ -31,7 +31,12 @@ public class PersonServices {
         if(person.isFollowing(followingPerson)) {
             throw new Exception("person " + personId + " already follows person" + personFollowingId);
         } else {
-            person.addFollowing(followingPerson);
+            /*depending on privacy type send request or follow immediately */
+            switch (person.getPersonPrivatesyType()) {
+                case PUBLIC: person.addFollowing(followingPerson); break;
+                case PRIVATE: person.addFollowRequestsSent(followingPerson); break;
+                default: person.addFollowing(followingPerson); break;
+            }
 
             personRepository.save(person);
 
@@ -71,6 +76,32 @@ public class PersonServices {
         return person.isFollowing(followingPerson);
     }
 
+    /**
+     * Check if personId already has send follow request to personFollowingId
+     * */
+    public boolean checkIfhasSendFollowRequest(Long personId, Long personFollowingId) throws Exception {
+        Person[] twoPersons = getTwoPersons(personId, personFollowingId);
+
+        Person person = twoPersons[0];
+        Person followingPerson = twoPersons[1];
+
+        return person.hasSendFollowRequest(followingPerson);
+    }
+
+    /**
+     * Check if personId already has received follow request from personFollowingId
+     * */
+    public boolean checkIfReceivedFollowRequest(Long personId, Long personFollowingId) throws Exception {
+        Person[] twoPersons = getTwoPersons(personId, personFollowingId);
+
+        Person person = twoPersons[0];
+        Person followingPerson = twoPersons[1];
+
+        return person.hasReceivedFollowRequest(followingPerson);
+    }
+
+
+
     private Person[] getTwoPersons(Long actorId, Long actedId) throws Exception {
         Optional<Person> optionalPerson = personRepository.findById(actorId);
         if(!optionalPerson.isPresent()) throw new Exception("Can not find person with ID: " + actorId);
@@ -104,6 +135,27 @@ public class PersonServices {
         return followers;
     }
 
+    public void manageFollowRequest(Long receiverId, Long senderId, boolean acceptance) throws Exception {
+        Person[] twoPersons = getTwoPersons(receiverId, senderId);
+
+        Person receiverPerson = twoPersons[0];
+        Person senderPerson = twoPersons[1];
+
+        if(acceptance) { //if receiver has accepted following request
+            receiverPerson.removeFollowRequestsReceived(senderPerson);
+
+            senderPerson.removeFollowRequestsSent(receiverPerson);
+            senderPerson.addFollowing(receiverPerson);
+        } else {
+            receiverPerson.removeFollowRequestsReceived(senderPerson);
+            senderPerson.removeFollowRequestsSent(receiverPerson);
+        }
+
+        personRepository.save(receiverPerson);
+        personRepository.save(senderPerson);
+
+
+    }
 
     public void deleteAll() {
         personRepository.deleteAll();

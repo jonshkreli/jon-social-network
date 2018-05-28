@@ -1,19 +1,14 @@
 package jonjon.controllers;
 
 import jonjon.entities.Person;
-import jonjon.logic.PersonServices;
+import jonjon.services.PersonServices;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.hateoas.Link;
-import org.springframework.hateoas.ResourceSupport;
 import org.springframework.hateoas.Resources;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
-import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
 
 @RestController
 @RequestMapping("/people/{id}")
@@ -66,6 +61,19 @@ public class PersonController {
             return new ResponseEntity(e.getMessage(),HttpStatus.BAD_REQUEST);
         }
         return new ResponseEntity(HttpStatus.BAD_REQUEST);
+    }
+
+    @GetMapping("/getFollowers")
+    @ResponseBody
+    ResponseEntity getFollowers(@PathVariable String id) {
+        try {
+            Long personId = Long.parseLong(id);
+                Resources<Person> result = new Resources<Person>(personServices.getFollowers(personId));
+                return new ResponseEntity(result, HttpStatus.CREATED);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ResponseEntity(e.getMessage(),HttpStatus.BAD_REQUEST);
+        }
     }
 
     @DeleteMapping("/deleteAll")

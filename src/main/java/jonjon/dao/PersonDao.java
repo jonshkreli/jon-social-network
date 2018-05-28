@@ -33,6 +33,23 @@ public class PersonDao {
             return person;
     }
 
+    public Person removeFollowing(Long personId, Long personFollowingId) throws Exception {
+        Optional<Person> optionalPerson = personRepository.findById(personId);
+        if(!optionalPerson.isPresent()) throw new Exception("Can not find person with ID: " + personId);
+
+        Optional<Person> optionalPersonFollowing = personRepository.findById(personFollowingId);
+        if(!optionalPersonFollowing.isPresent()) throw new Exception("Can not find person with ID: " + personFollowingId);
+
+        Person person = optionalPerson.get();
+        Person followingPerson = optionalPersonFollowing.get();
+
+        person.removeFollowing(followingPerson);
+
+        personRepository.save(person);
+
+        return person;
+    }
+
     /**
      * Check if personId already follows personFollowingId
      * */

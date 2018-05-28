@@ -23,6 +23,17 @@ public class PersonServices {
         }
     }
 
+    public Person removeFollowing(Long personId, Long personFollowingId) throws Exception {
+        if(personId.equals(personFollowingId)) throw new Exception("Can not unfollow itself");
+        else if(! personDao.checkIfFollowing(personId, personFollowingId)) {
+            //System.out.println("person " + personId + " already follows person" + personFollowingId);
+            throw new Exception("person " + personId + " is not following person" + personFollowingId);
+        } else {
+            return personDao.removeFollowing(personId, personFollowingId);
+        }
+    }
+
+
     public void deleteAll() {
         personDao.deleteAll();
     }

@@ -3,11 +3,20 @@ package jonjon.controllers;
 import jonjon.entities.Person;
 import jonjon.logic.PersonServices;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.hateoas.Link;
+import org.springframework.hateoas.ResourceSupport;
+import org.springframework.hateoas.Resources;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
+import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
+import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
+
 @RestController
-@RequestMapping("/person/{id}")
+@RequestMapping("/people/{id}")
 public class PersonController {
 
     @Autowired
@@ -27,12 +36,36 @@ public class PersonController {
             Long followId = Long.parseLong(followPersonId);
             Person person = personServices.addFollowing(personId, followId);
 
-            if(person != null) return ResponseEntity.ok(person.getFollowing());
+            if(person != null) {
+                //Link selfLink = linkTo(PersonController.class).slash(person.getId()).withSelfRel();
+                Resources<Person> result = new Resources<Person>(person.getFollowing());
+                return new ResponseEntity(result, HttpStatus.CREATED);
+            }
         } catch (Exception e) {
             e.printStackTrace();
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return new ResponseEntity(e.getMessage(),HttpStatus.BAD_REQUEST);
         }
-        return ResponseEntity.badRequest().build();
+        return new ResponseEntity(HttpStatus.BAD_REQUEST);
+    }
+
+    @PatchMapping("/removeFollowing")
+    @ResponseBody
+    ResponseEntity removeFollowing(@PathVariable String id, @RequestBody String followPersonId) {
+        try {
+            Long personId = Long.parseLong(id);
+            Long followId = Long.parseLong(followPersonId);
+            Person person = personServices.removeFollowing(personId, followId);
+
+            if(person != null) {
+               // Link selfLink = linkTo(PersonController.class).slash(person.getId()).withSelfRel();
+                Resources<Person> result = new Resources<Person>(person.getFollowing());
+                return new ResponseEntity(result, HttpStatus.CREATED);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ResponseEntity(e.getMessage(),HttpStatus.BAD_REQUEST);
+        }
+        return new ResponseEntity(HttpStatus.BAD_REQUEST);
     }
 
     @DeleteMapping("/deleteAll")

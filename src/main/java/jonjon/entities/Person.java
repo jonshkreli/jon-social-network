@@ -48,9 +48,21 @@ public class Person {
 		following.add(person);
 	}
 
+	public void removeFollowing(Person person) {
+		following.remove(person);
+	}
+
+
 	public boolean isFollowing(Person person) {
 		if(following.contains(person)) return true;
 		else return false;
 	}
 
+	public Long getId() {
+		return id;
+	}
+
+	public void setId(Long id) {
+		this.id = id;
+	}
 }

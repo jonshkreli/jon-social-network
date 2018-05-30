@@ -25,7 +25,7 @@ public class PersonController {
 
     @PatchMapping("/addFollowing")
     @ResponseBody
-    ResponseEntity addFollowing(@PathVariable String id, @RequestBody String followPersonId) {
+    public ResponseEntity addFollowing(@PathVariable String id, @RequestBody String followPersonId) {
         try {
             Long personId = Long.parseLong(id);
             Long followId = Long.parseLong(followPersonId);
@@ -45,7 +45,7 @@ public class PersonController {
 
     @PatchMapping("/removeFollowing")
     @ResponseBody
-    ResponseEntity removeFollowing(@PathVariable String id, @RequestBody String followPersonId) {
+    public ResponseEntity removeFollowing(@PathVariable String id, @RequestBody String followPersonId) {
         try {
             Long personId = Long.parseLong(id);
             Long followId = Long.parseLong(followPersonId);
@@ -65,7 +65,7 @@ public class PersonController {
 
     @GetMapping("/getFollowers")
     @ResponseBody
-    ResponseEntity getFollowers(@PathVariable String id) {
+    public ResponseEntity getFollowers(@PathVariable String id) {
         try {
             Long personId = Long.parseLong(id);
                 Resources<Person> result = new Resources<Person>(personServices.getFollowers(personId));
@@ -80,7 +80,7 @@ public class PersonController {
     @ResponseBody
     ResponseEntity manageFollowRequest(
             @PathVariable String receiverId,
-            @RequestParam("senderRequestId") String personSenderRequestId,
+            @RequestParam("to") String personSenderRequestId,
             @RequestParam("acceptance") String acceptance
             ) {
         try {
@@ -89,7 +89,8 @@ public class PersonController {
 
             boolean acceptanceResult = false;
 
-            if(acceptance.equalsIgnoreCase("true") || acceptance.equals("1"))
+            if(acceptance.equalsIgnoreCase("true") || acceptance.equals("1") ||
+                    acceptance.equalsIgnoreCase("yes"))
                 acceptanceResult = true;
 
             personServices.manageFollowRequest(id, senderRequestId, acceptanceResult);
